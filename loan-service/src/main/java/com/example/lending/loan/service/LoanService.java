@@ -8,7 +8,9 @@ import com.example.lending.loan.entity.Loan;
 import com.example.lending.loan.kafka.LoanAppliedEvent;
 import com.example.lending.loan.kafka.LoanEventProducer;
 import com.example.lending.loan.repository.LoanRepository;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 @Service
 public class LoanService {
@@ -42,6 +44,7 @@ public class LoanService {
     }
 
     public Loan getLoan(Long id) {
-        return loanRepository.findById(id).orElse(null);
+        return loanRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "loan " + id + " not found"));
     }
 }

@@ -4,12 +4,16 @@ import com.example.lending.loan.dto.RiskAssessmentDto;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
 
+import java.time.Duration;
+
 /**
  * CROSS-REPO HTTP call (WebClient): loan-service -> risk-service GET /api/v1/risk/{id}.
  * Same target service as RiskClient (Feign) but a different client library and endpoint.
  */
 @Component
 public class RiskWebClient {
+
+    private static final Duration RISK_CALL_TIMEOUT = Duration.ofSeconds(5);
 
     private final WebClient webClient;
 
@@ -22,6 +26,6 @@ public class RiskWebClient {
                 .uri("/api/v1/risk/{id}", id)
                 .retrieve()
                 .bodyToMono(RiskAssessmentDto.class)
-                .block();
+                .block(RISK_CALL_TIMEOUT);
     }
 }
