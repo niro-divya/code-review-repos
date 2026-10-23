@@ -3,6 +3,8 @@ package com.example.lending.risk.kafka;
 import com.example.lending.risk.dto.LoanDto;
 import com.example.lending.risk.dto.RiskAssessmentDto;
 import com.example.lending.risk.service.RiskService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Component;
 
@@ -12,6 +14,8 @@ import org.springframework.stereotype.Component;
  */
 @Component
 public class RiskEventConsumer {
+
+    private static final Logger log = LoggerFactory.getLogger(RiskEventConsumer.class);
 
     private final RiskService riskService;
     private final RiskEventProducer producer;
@@ -23,6 +27,10 @@ public class RiskEventConsumer {
 
     @KafkaListener(topics = "loan.applied", groupId = "risk")
     public void onLoanApplied(LoanAppliedEvent event) {
+        if (event == null || event.getLoanId() == null) {
+            log.warn("Skipping loan.applied event without a loanId");
+            return;
+        }
         LoanDto loan = new LoanDto(event.getLoanId(), event.getAmount(), "STANDARD", event.getUserId());
         RiskAssessmentDto assessment = riskService.assessRisk(loan);
         producer.publishRiskAssessed(new RiskAssessedEvent(
