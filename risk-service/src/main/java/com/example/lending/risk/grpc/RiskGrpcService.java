@@ -6,6 +6,7 @@ import com.example.lending.risk.grpc.proto.AssessReply;
 import com.example.lending.risk.grpc.proto.AssessRequest;
 import com.example.lending.risk.grpc.proto.RiskServiceGrpc;
 import com.example.lending.risk.service.RiskService;
+import io.grpc.Status;
 import io.grpc.stub.StreamObserver;
 import net.devh.boot.grpc.server.service.GrpcService;
 
@@ -24,6 +25,12 @@ public class RiskGrpcService extends RiskServiceGrpc.RiskServiceImplBase {
 
     @Override
     public void assess(AssessRequest request, StreamObserver<AssessReply> responseObserver) {
+        if (request.getLoanId() <= 0) {
+            responseObserver.onError(Status.INVALID_ARGUMENT
+                    .withDescription("loanId is required")
+                    .asRuntimeException());
+            return;
+        }
         LoanDto loan = new LoanDto(request.getLoanId(), request.getAmount(), "STANDARD", null);
         RiskAssessmentDto assessment = riskService.assessRisk(loan);
         AssessReply reply = AssessReply.newBuilder()
