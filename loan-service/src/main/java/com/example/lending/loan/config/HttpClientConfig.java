@@ -3,12 +3,16 @@ package com.example.lending.loan.config;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.reactive.function.client.WebClient;
 
 /** Beans for the two non-Feign HTTP clients that call risk-service. */
 @Configuration
 public class HttpClientConfig {
+
+    private static final int CONNECT_TIMEOUT_MS = 2_000;
+    private static final int READ_TIMEOUT_MS = 5_000;
 
     @Value("${risk-service.url}")
     private String riskServiceUrl;
@@ -20,6 +24,9 @@ public class HttpClientConfig {
 
     @Bean
     public RestTemplate restTemplate() {
-        return new RestTemplate();
+        SimpleClientHttpRequestFactory requestFactory = new SimpleClientHttpRequestFactory();
+        requestFactory.setConnectTimeout(CONNECT_TIMEOUT_MS);
+        requestFactory.setReadTimeout(READ_TIMEOUT_MS);
+        return new RestTemplate(requestFactory);
     }
 }

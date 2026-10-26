@@ -4,7 +4,9 @@ import com.example.lending.platform.billing.client.AccountClient;
 import com.example.lending.platform.billing.dto.LoanDto; // NOTE: the COPY, not platform-common's
 import com.example.lending.platform.billing.fee.DefaultFeeCalculator;
 import com.example.lending.platform.common.dto.AccountDto;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 /**
  * METHOD OVERLOADING (3x): charge(Long), charge(Long, double), charge(LoanDto).
@@ -25,6 +27,9 @@ public class BillingService {
     /** Overload 1: charge an account its default. */
     public double charge(Long accountId) {
         AccountDto account = accountClient.getAccount(accountId); // cross-module HTTP
+        if (account == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "account " + accountId + " not found");
+        }
         return charge(accountId, account.getBalance());
     }
 
